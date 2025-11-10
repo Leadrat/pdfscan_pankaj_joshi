@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: Build a high-end interactive image viewer with zoom, pan, carousel, lazy loading, and animations. Optimize the app for Lighthouse scores ≥ 90 (Performance, Accessibility, Best Practices). Ensure accessibility (ARIA, keyboard, WCAG AA), responsive images (WebP), code splitting, and client-side performance monitoring. Maintain glassmorphism theme (indigo-500 to purple-600 gradient, emerald-400 accent, dark #0f172a, Inter/Poppins fonts).
 
+## Clarifications
+
+### Session 2025-11-10
+
+- Q: What is the source of images for the gallery? → A: Images come from the existing upload/OCR pipeline (brochures and floor plans)
+- Q: How should client-side performance monitoring be implemented? → A: Log timing metrics to browser console in development only
+- Q: What should be the responsive grid layout for the gallery? → A: 3 columns on desktop, 2 on tablet, 1 on mobile
+- Q: What are the zoom limits and pan behavior? → A: 300% max zoom with smooth pan boundaries
+- Q: What are the network timeout and retry strategies? → A: 10 second timeout with 2 retry attempts
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Interactive image exploration (Priority: P1)

@@ -1,0 +1,404 @@
+openapi: 3.0.3
+info:
+  title: Leadrat Interactive Visualization API
+  description: API endpoints for the interactive image gallery and viewer
+  version: 1.0.0
+  contact:
+    name: Leadrat Development Team
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.leadrat.com/api
+    description: Production server
+
+paths:
+  /images/{upload_id}:
+    get:
+      summary: Get all images for an upload
+      description: Retrieve all extracted images for a specific upload in gallery format
+      operationId: getImagesByUploadId
+      tags:
+        - Gallery
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the upload
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [webp, jpeg, all]
+            default: webp
+          description: Preferred image format
+      responses:
+        '200':
+          description: Images retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryResponse'
+              examples:
+                success:
+                  summary: Successful gallery response
+                  value:
+                    success: true
+                    data:
+                      images:
+                        - url: "/static/images/extracted_001.webp"
+                          fallbackUrl: "/static/images/extracted_001.jpg"
+                          thumbnailUrl: "/static/images/thumbs/extracted_001_thumb.jpg"
+                          caption: "Master Bedroom with En-suite Bathroom"
+                          altText: "Floor plan showing master bedroom layout with en-suite bathroom"
+                          source: "ocr"
+                          sourceId: "extract_001"
+                          width: 1200
+                          height: 800
+                          aspectRatio: 1.5
+                          fileSize: 245760
+                          format: "webp"
+                          tags: ["bedroom", "en-suite"]
+                          metadata:
+                            page: 1
+                            ocrConfidence: 0.94
+                      totalCount: 12
+                      uploadId: "12345"
+                      generatedAt: "2025-11-10T14:30:00Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /images/{upload_id}/{image_id}/metadata:
+    get:
+      summary: Get detailed image metadata
+      description: Retrieve comprehensive metadata for a specific extracted image
+      operationId: getImageMetadata
+      tags:
+        - Gallery
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the upload
+        - name: image_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the image
+      responses:
+        '200':
+          description: Image metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageMetadataResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /images/{upload_id}/{image_id}/download:
+    get:
+      summary: Download original image
+      description: Download the full-resolution version of an extracted image
+      operationId: downloadImage
+      tags:
+        - Gallery
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the upload
+        - name: image_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the image
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [original, webp, jpeg]
+            default: original
+          description: Download format preference
+      responses:
+        '200':
+          description: Image file
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ImageItem:
+      type: object
+      required:
+        - url
+        - thumbnailUrl
+        - caption
+        - altText
+        - source
+        - sourceId
+        - width
+        - height
+        - aspectRatio
+        - fileSize
+        - format
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Primary image URL (WebP preferred)
+        fallbackUrl:
+          type: string
+          format: uri
+          description: Fallback URL for older browsers
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: Low-quality placeholder URL
+        caption:
+          type: string
+          maxLength: 200
+          description: Display caption for the image
+        altText:
+          type: string
+          maxLength: 300
+          description: Accessibility alt text
+        source:
+          type: string
+          enum: [upload, ocr]
+          description: Where the image originated
+        sourceId:
+          type: string
+          description: Reference to upload or extraction record
+        width:
+          type: integer
+          minimum: 1
+          description: Image width in pixels
+        height:
+          type: integer
+          minimum: 1
+          description: Image height in pixels
+        aspectRatio:
+          type: number
+          minimum: 0.1
+          description: Width/height ratio for layout stability
+        fileSize:
+          type: integer
+          minimum: 1
+          description: File size in bytes
+        format:
+          type: string
+          enum: [webp, jpeg, png]
+          description: Image format
+        tags:
+          type: array
+          items:
+            type: string
+          description: Optional categorization tags
+        metadata:
+          type: object
+          description: Additional metadata (OCR results, EXIF data, etc.)
+          properties:
+            page:
+              type: integer
+              description: Page number where image was extracted
+            ocrConfidence:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: OCR confidence score
+
+    GalleryResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Request success status
+        data:
+          type: object
+          required:
+            - images
+            - totalCount
+            - uploadId
+            - generatedAt
+          properties:
+            images:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageItem'
+              description: Array of image items for the gallery
+            totalCount:
+              type: integer
+              minimum: 0
+              description: Total number of images
+            uploadId:
+              type: string
+              description: Upload identifier
+            generatedAt:
+              type: string
+              format: date-time
+              description: Response generation timestamp
+
+    ImageMetadataResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Request success status
+        data:
+          type: object
+          required:
+            - image
+          properties:
+            image:
+              type: object
+              required:
+                - id
+                - uploadId
+                - extractedAt
+              properties:
+                id:
+                  type: string
+                  description: Image identifier
+                uploadId:
+                  type: string
+                  description: Upload identifier
+                extractedAt:
+                  type: string
+                  format: date-time
+                  description: Image extraction timestamp
+                ocrResults:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      description: Extracted text content
+                    confidence:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                      description: OCR confidence score
+                    blocks:
+                      type: array
+                      items:
+                        type: object
+                      description: OCR block data
+                exif:
+                  type: object
+                  description: EXIF metadata from original image
+                processingHistory:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - step
+                      - status
+                    properties:
+                      step:
+                        type: string
+                        enum: [extraction, ocr, optimization]
+                      status:
+                        type: string
+                        enum: [pending, completed, failed]
+                      duration:
+                        type: integer
+                        description: Processing duration in milliseconds
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              description: Additional error details
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              summary: Resource not found
+              value:
+                success: false
+                error:
+                  code: NOT_FOUND
+                  message: "The requested resource was not found"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            server_error:
+              summary: Internal server error
+              value:
+                success: false
+                error:
+                  code: INTERNAL_ERROR
+                  message: "An internal server error occurred"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Gallery
+    description: Interactive image gallery operations
