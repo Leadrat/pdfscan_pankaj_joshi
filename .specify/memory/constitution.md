@@ -1,50 +1,114 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: (none) → 1.0.0
+- Modified principles: [placeholders] → Simplicity; Intelligence; Speed; Reliability; Delight; Data Privacy & Security; Accessibility & Performance; Observability & Logging
+- Added sections: Technology & Architecture; Development Workflow & Quality Gates
+- Removed sections: None
+- Templates requiring updates:
+  ✅ .specify/templates/plan-template.md (aligned)
+  ✅ .specify/templates/spec-template.md (aligned)
+  ✅ .specify/templates/tasks-template.md (aligned)
+- Follow-up TODOs: None
+-->
+
+# Leadrat Constitution
+<!-- Constitution for Leadrat: intelligent real estate brochure → interactive landing page system -->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Simplicity
+Leadrat MUST offer an intuitive, streamlined workflow: upload → extract → structure → chat → auto-page.
+UI elements MUST minimize cognitive load by adhering to the design system and avoiding unnecessary configuration.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### Intelligence
+Use Gemini 2.5-Flash to structure brochure data into JSON (Overview, Amenities, Connectivity, Floor Plans, FAQs).
+Combine PDF text, OCR results, and image metadata for context-aware outputs.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Speed
+Favor asynchronous processing, lazy loading, and optimized bundles.
+Target Lighthouse performance scores ≥ 90.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### Reliability
+Strong error handling with graceful fallbacks for OCR/LLM failures.
+Use robust logging and clear user feedback (toasts, states).
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Delight
+Employ modern aesthetics (glassmorphism, gradients) and subtle animations via Framer Motion.
+Provide responsive, mobile-first experiences across screens.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### Data Privacy & Security
+Do not persist API keys in code; use environment variables (`.env`).
+Restrict uploaded PDF access to project scope. Sanitize inputs and handle files safely.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Accessibility & Performance
+Use ARIA labels, sufficient contrast, and keyboard navigation.
+Lazy-load images; optimize and compress assets; implement responsive images.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### Observability & Logging
+Log every major backend operation with contextual metadata.
+Emit structured logs for extractions, OCR, LLM calls, and storage events.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Technology & Architecture
+<!-- Tech stack, constraints, storage, theming -->
+
+- Frontend: React (Vite), Tailwind CSS, Framer Motion, Axios, React Router DOM,
+  Lottie React, react-medium-image-zoom, ShadCN UI.
+- Backend: Python Flask, Flask-CORS, PyMuPDF/pdfminer.six, pdf2image,
+  pytesseract + EasyOCR, Google Generative AI SDK (Gemini 2.5-Flash), SQLite,
+  python-dotenv, logging.
+- Storage: `/uploads` for PDFs; `/static/images/` for extracted images;
+  SQLite for uploads, extraction logs, structured data.
+- Theming: Primary gradient from-indigo-500 to-purple-600, accent emerald-400,
+  dark background #0f172a, fonts Inter/Poppins.
+- Non-functional targets: Accessibility, performance (Lighthouse ≥ 90), security
+  of secrets and user data, observability via structured logs.
+
+## Development Workflow & Quality Gates
+<!-- Workflow, reviews, gates, performance -->
+
+- Upload: Drag-drop, PDF only, ≤ 25 MB, progress feedback, Lottie success.
+- Extraction: `/api/extract-text` with cleaned structured text per page;
+  image extraction to `/static/images/` with metadata; OCR preprocessing
+  (grayscale, denoise, threshold, deskew) via Tesseract + EasyOCR.
+- LLM Structuring: Merge text + OCR + image metadata → Gemini 2.5-Flash → JSON
+  sections (Overview, Amenities, Connectivity, Floor Plans, FAQs) with loading
+  animation during processing.
+- Chatbot: Contextual Q&A powered by Gemini; when data is missing → respond
+  "No idea based on brochure."
+- Dynamic Landing Page: Auto-generate Hero, Amenities Grid, Connectivity Table,
+  Floor Plan Gallery, FAQs; responsive with Framer Motion animations.
+- UI/UX: Glassmorphism, gradient themes, micro-interactions, consistent
+  typography and contrast.
+- Error Handling & Logging: Python logging for major ops; try/except in Flask
+  routes; user toasts for errors; graceful LLM/OCR failure handling.
+- Performance & Accessibility: Lazy-loading images, ARIA labels, bundle size
+  optimization, render-blocking reduction, Lighthouse ≥ 90.
 
 ## Governance
 <!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes other practices for Leadrat. All work MUST comply.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+Amendments
+- Propose via PR including a Sync Impact Report, version bump rationale, and any
+  migration/communication plan.
+- Changes considered:
+  - MAJOR: Backward-incompatible governance updates or principle removals/
+    redefinitions.
+  - MINOR: New principles/sections or materially expanded guidance.
+  - PATCH: Clarifications, non-semantic refinements, typos.
+
+Approvals
+- At least one backend and one frontend reviewer, or a designated domain lead.
+- PRs MUST document compliance with principles and quality gates.
+
+Security & Privacy
+- API keys via `.env`; never committed. Handle PII cautiously; minimize
+  retention and scope.
+
+Observability
+- Log extraction, OCR, LLM calls, and storage events with structured context.
+  Avoid sensitive payloads in logs.
+
+**Version**: 1.0.0 | **Ratified**: 2025-11-10 | **Last Amended**: 2025-11-10
 <!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

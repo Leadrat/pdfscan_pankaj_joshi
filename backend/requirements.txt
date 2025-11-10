@@ -1,0 +1,14 @@
+flask
+flask-cors
+flask-sqlalchemy
+python-dotenv
+requests
+PyMuPDF
+pdfminer.six
+Pillow
+opencv-python
+pytesseract
+easyocr
+numpy
+scikit-image
+google-generativeai

@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Leadrat Structuring API
+  version: 0.1.0
+  description: API for structuring brochure data via Gemini 2.5-Flash
+servers:
+  - url: http://localhost:5000
+paths:
+  /structure-data:
+    post:
+      summary: Structure combined brochure data into normalized JSON
+      operationId: structureData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pdf_text, ocr_text]
+              properties:
+                pdf_text:
+                  type: string
+                  description: Raw text extracted from brochure PDFs
+                ocr_text:
+                  type: string
+                  description: Merged OCR text extracted from images
+                image_metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Optional metadata, labels, or categories for images
+                project_name:
+                  type: string
+                  description: Optional project name hint
+      responses:
+        '200':
+          description: Structured property data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredPropertyData'
+        '400':
+          description: Validation error or input exceeds limits
+        '500':
+          description: Structuring failure
+components:
+  schemas:
+    StructuredPropertyData:
+      type: object
+      required: [project_overview, amenities, connectivity, floor_plans, faqs]
+      properties:
+        project_overview:
+          $ref: '#/components/schemas/ProjectOverview'
+        amenities:
+          type: array
+          items:
+            type: string
+        connectivity:
+          $ref: '#/components/schemas/Connectivity'
+        floor_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/FloorPlanItem'
+        faqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FAQItem'
+    ProjectOverview:
+      type: object
+      properties:
+        project_name:
+          type: string
+        developer_name:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        launch_date:
+          type: string
+        possession_date:
+          type: string
+        rera_number:
+          type: string
+        total_towers:
+          type: string
+        total_units:
+          type: string
+        project_type:
+          type: string
+    Connectivity:
+      type: object
+      properties:
+        nearby_schools:
+          type: array
+          items:
+            type: string
+        nearby_hospitals:
+          type: array
+          items:
+            type: string
+        nearby_malls:
+          type: array
+          items:
+            type: string
+        transport_facilities:
+          type: array
+          items:
+            type: string
+    FloorPlanItem:
+      type: object
+      properties:
+        tower_name:
+          type: string
+        bhk_type:
+          type: string
+        carpet_area:
+          type: string
+        super_area:
+          type: string
+        price_range:
+          type: string
+        image_reference:
+          type: string
+    FAQItem:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
