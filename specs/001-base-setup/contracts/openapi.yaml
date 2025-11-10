@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: Leadrat Spec 1 API
+  version: 0.1.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /test:
+    get:
+      summary: Backend connectivity test
+      operationId: getTest
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Backend connected successfully!
